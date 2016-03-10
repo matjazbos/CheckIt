@@ -1,22 +1,21 @@
 package com.mbostic.gameObjects;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.mbostic.game.Assets;
+import com.mbostic.game.JakaIgrcaMain;
 
-public class CheckBox {
-    private TextureRegion regcbuc;
-    public boolean checked;
-    public Vector2 position;
-    public CheckBox (float x, float y) {
+public class CheckBox extends AbstractObject {
+    public Vector2 speed;
+    public int index;
+    public CheckBox (float x, float y){
+        JakaIgrcaMain.cBN++;
+        index = JakaIgrcaMain.cBN;
+        speed = new Vector2();
         position = new Vector2(x, y);
-        checked = false;
-        regcbuc = Assets.instance.checkBox.cbuc;
-    }
-    public void render (SpriteBatch batch) {
-        TextureRegion reg = null;
-        reg = regcbuc;
-        batch.draw(reg.getTexture(), position.x, position.y,0,0,40f,40f,1,1,0,reg.getRegionX(),reg.getRegionY(),reg.getRegionWidth(),reg.getRegionHeight(),false,false);
+        reguc = Assets.instance.checkBox.cbuc;
+        regc = Assets.instance.checkBox.cbc;
+        speed.x = (float) (Math.random()*40+20)* (MathUtils.randomBoolean() ? 1 : -1) ; //hitrost (px/s)
+        speed.y = (float) (Math.random()*60+30)* (MathUtils.randomBoolean() ? 1 : -1) ;
     }
 }

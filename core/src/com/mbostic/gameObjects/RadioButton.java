@@ -5,9 +5,9 @@ import com.mbostic.game.Assets;
 import com.mbostic.game.JakaIgrcaMain;
 
 public class RadioButton extends AbstractObject {
-public int num;
+public int id;
     public RadioButton (float x, float y){
-        num = JakaIgrcaMain.rBN;
+        id = JakaIgrcaMain.rBN;
         JakaIgrcaMain.rBN++;
         position = new Vector2(x, y);
         reguc = Assets.instance.radioButton.rbuc;

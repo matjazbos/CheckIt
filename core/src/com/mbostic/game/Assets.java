@@ -1,6 +1,7 @@
 package com.mbostic.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetErrorListener;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
@@ -18,6 +19,7 @@ public class Assets implements Disposable {
     public AssetRadioButton radioButton;
     public AssetButton button;
     public AssetIcons icons;
+    private static Preferences prefs;
 
     public static final Assets instance = new Assets();
    // private AssetManager assetManager;
@@ -53,6 +55,10 @@ public class Assets implements Disposable {
         radioButton = new AssetRadioButton(atlas);
         button = new AssetButton(atlas);
         icons = new AssetIcons(atlas);
+        prefs = Gdx.app.getPreferences("prefs");
+        if (!prefs.contains("bestTime")) {
+            prefs.putFloat("bestTime", 300);
+        }
     }
     public class AssetCheckBox {
         public final AtlasRegion cbuc;
@@ -89,6 +95,14 @@ public class Assets implements Disposable {
             rbuc = atlas.findRegion("rbuc");
             rbc = atlas.findRegion("rbc");
         }
+    }
+    public static void setBestTime(float val) {
+        prefs.putFloat("bestTime", val);
+        prefs.flush();
+    }
+
+    public static float getBestTime() {
+        return prefs.getFloat("bestTime");
     }
     @Override
     public void dispose () {

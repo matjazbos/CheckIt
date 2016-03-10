@@ -27,12 +27,12 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 	int midX;//sredina ekrana
 	int midY;
 	int[] gamePositions = new int[4];
-	int checkboxes = 15; //število checkboxov
+	int checkboxes = 10; //število checkboxov
 	CheckBox[] cb1 = new CheckBox[checkboxes];
 	CheckBox[] cb2 = new CheckBox[10];
 	CheckBox[] cB = new CheckBox[10];
 	RadioButton[] rB = new RadioButton[10];
-
+	Button resetBestTime;
 	boolean test = false;
 
 	float delay;
@@ -70,14 +70,15 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 
 	public void init (){
 		delay =0;
-		rBN = 0;
+		rBN = -1;
 		cBN = 0;
 		buttonN = 0;
 		time = 0;
 		setGamePositions();
-		button = new Button(midX - 40, midY);
-		radioB = new RadioButton(-1,-1);
+		resetBestTime = new Button(midX + 150, midY );
 
+		radioB = new RadioButton(-1,-1);
+		if(Assets.getBestTime()==0f)Assets.setBestTime(300f);
 		for (int j = 0; j < cb1.length; j++) cb1[j] =
 				new CheckBox(midX - 20 + MathUtils.random(-100, 100), midY + MathUtils.random(-100, 100));//checkboxi nastanejo na sredini
 
@@ -90,12 +91,18 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 
 	}
 
-
+Float shortTime;
 	 public void gameOver(boolean finished){
-		 end = finished ? "Enter your name:" : "Try again!";
+		 shortTime = (float) Math.round(time * 10f) / 10f;
+		 end = finished ? "Your time:\n    " + shortTime : "Try again!";
+		 if (time < Assets.getBestTime()){
+			 end = "New high score!\n" + shortTime;
+			 Assets.setBestTime((float) Math.round(time * 10f) / 10f);
+		 }
 		 init();
 		 buttonN = -1;
 	}
+
 
 	@Override
 	public void render () {
@@ -108,6 +115,9 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 //welcome screen
 			if (buttonN == 1) {
 				Assets.instance.robotoBig.draw(batch, "Check it!", 120, 2 * midY - 100);
+
+				if(!(Assets.getBestTime()==300))
+					Assets.instance.roboto.draw(batch,"Best time: " + Assets.getBestTime(), 130,  2 * midY - 300);
 				play.render(batch);
 				settings.render(batch);
 				exit.render(batch);
@@ -117,10 +127,14 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 					} else if (exit.tap(Gdx.input.getX(), getY())) {
 						Gdx.app.exit();
 					}
+					else if (settings.tap(Gdx.input.getX(), getY())) {
+
+						buttonN = -2;
+					}
 				}
 			}
 //napiše čas
-			if (buttonN != 1 && buttonN != -1) {
+			if (buttonN != 1 && buttonN != -1 && buttonN != -2) {
 				time += deltaTime;
 				Assets.instance.roboto.draw(batch, Float.toString((float) Math.round(time * 10f) / 10f), midX - 50, 2 * midY - 30);
 				smallReplay.render(batch);// replay
@@ -132,7 +146,7 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 					}
 			}
 //gumb
-			if (buttonN != -1 && buttonN != 1 && buttonN != gamePositions[0] &&
+			if (buttonN != -1 && buttonN != 1 && buttonN != -2 && buttonN != gamePositions[0] &&
 					buttonN != gamePositions[1] && buttonN != gamePositions[2] && buttonN != gamePositions[3]) {
 				if (Gdx.input.justTouched()) button.tap(Gdx.input.getX(), getY());
 				button.render(batch);
@@ -166,17 +180,41 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 				replay.render(batch);
 				home.render(batch);
 				exit.render(batch);
-				Assets.instance.roboto.draw(batch, end, 0, 2 * midY - 100);
+				Assets.instance.roboto.draw(batch, end, 200, 2 * midY - 100);
 				if (delay < 0.5f) delay += deltaTime;
 				else {
+
 					if (Gdx.input.justTouched()) {
 						if (home.tap(Gdx.input.getX(), getY())) {
 							buttonN = 1;
+							delay = 0;
 						} else if (replay.tap(Gdx.input.getX(), getY())) {
 							buttonN = 1;
+							delay = 0;
 							button = new Button(randx(), randy());
 						} else if (exit.tap(Gdx.input.getX(), getY())) {
 							Gdx.app.exit();
+						}
+					}
+				}
+			}
+//nastavitve
+			if (buttonN == -2) {
+				home.render(batch);
+				resetBestTime.render(batch);
+				Assets.instance.roboto.draw(batch, "reset best time", 10, midY+50);
+				if (delay < 0.5f) delay += deltaTime;
+				else {
+					if (Gdx.input.justTouched()) {
+						{
+							if (home.tap(Gdx.input.getX(), getY())) {
+								buttonN = 1;
+								delay = 0;
+							}
+							else if (resetBestTime.tap(Gdx.input.getX(), getY())) {
+								Assets.setBestTime(300);
+								buttonN = -2;
+							}
 						}
 					}
 				}
@@ -224,8 +262,8 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 	public void checkBox2(){
 		checkBoxCheck(cb2);
 		for (CheckBox c1 : cb2) {
-			c1.position.x += c1.speed.x * deltaTime * 3; //premakne vse checkboxe
-			c1.position.y += c1.speed.y * deltaTime * 3;
+			c1.position.x += c1.speed.x * deltaTime * 4; //premakne vse checkboxe
+			c1.position.y += c1.speed.y * deltaTime * 4;
 			if (c1.position.x < 0 || c1.position.x > 2 * midX - 40) c1.speed.x = -c1.speed.x;
 			if (c1.position.y < 0 || c1.position.y > 2 * midY - 40) c1.speed.y = -c1.speed.y;//smer se obrne, če zadane rob ekrana
 			r1.set(c1.position.x, c1.position.y, 40f, 40f);  //collision detect
@@ -275,19 +313,19 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 		if (allChecked) {button = new Button(randx(), randy());}
 	}
 
-	public void radioButtonCheck(){
+	public void radioButtonCheck() {
 		if (Gdx.input.justTouched()) {
-
 			for (RadioButton rb : rB) {
-				if(rb.tap(Gdx.input.getX(), getY())) radioB = rb;
-				if(radioB.num==5)button = new Button(randx(), randy());
-			}
-			for (RadioButton rb : rB) {
-				rb.checked = (rb==radioB);
+				if (rb.tap(Gdx.input.getX(), getY())) {
+					for (int i = 0; i < rB.length; i++) {
+						if (i == rb.id) continue;
+						rB[i].checked = false;
+					}
+					if (rb.id == 5) button = new Button(randx(), randy());
+				}
 			}
 		}
 	}
-
 	int[] randx = new int[10];
 	int[] randy = new int[10];
 	int[][] positions = new int[2][10];

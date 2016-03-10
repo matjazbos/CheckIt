@@ -224,8 +224,8 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 	public void checkBox2(){
 		checkBoxCheck(cb2);
 		for (CheckBox c1 : cb2) {
-			c1.position.x += c1.speed.x * deltaTime * 2; //premakne vse checkboxe
-			c1.position.y += c1.speed.y * deltaTime * 2;
+			c1.position.x += c1.speed.x * deltaTime * 3; //premakne vse checkboxe
+			c1.position.y += c1.speed.y * deltaTime * 3;
 			if (c1.position.x < 0 || c1.position.x > 2 * midX - 40) c1.speed.x = -c1.speed.x;
 			if (c1.position.y < 0 || c1.position.y > 2 * midY - 40) c1.speed.y = -c1.speed.y;//smer se obrne, če zadane rob ekrana
 			r1.set(c1.position.x, c1.position.y, 40f, 40f);  //collision detect

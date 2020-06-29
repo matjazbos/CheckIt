@@ -1,6 +1,5 @@
 android {
-    buildToolsVersion "23.0.1"
-    compileSdkVersion 20
+    compileSdkVersion 29
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -12,12 +11,15 @@ android {
             jniLibs.srcDirs = ['libs']
         }
 
-        instrumentTest.setRoot('tests')
+        androidTest.setRoot('tests')
     }
     defaultConfig {
-        applicationId "com.mbostic"
-        minSdkVersion 8
-        targetSdkVersion 20
+        applicationId "com.mbostic.checkit"
+        minSdkVersion 9
+        targetSdkVersion 29
+        versionCode 2
+        versionName "1.1"
+
     }
 }
 
@@ -126,4 +128,12 @@ idea {
 }
 dependencies {
     compile files('libs/gdx-freetype.jar')
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        google()
+    }
 }

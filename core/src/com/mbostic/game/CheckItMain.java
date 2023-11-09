@@ -15,8 +15,8 @@ import com.mbostic.gameObjects.Icon;
 import com.mbostic.gameObjects.RadioButton;
 import com.badlogic.gdx.math.Rectangle;
 
-public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
-	private static final String TAG = JakaIgrcaMain.class.getName();
+public class CheckItMain extends InputAdapter implements ApplicationListener {
+	private static final String TAG = CheckItMain.class.getName();
 	SpriteBatch batch;
 	public static int rBN;
 	public static int cBN;
@@ -91,16 +91,16 @@ public class JakaIgrcaMain extends InputAdapter implements ApplicationListener {
 
 	}
 
-Float shortTime;
-	 public void gameOver(boolean finished){
-		 shortTime = (float) Math.round(time * 10f) / 10f;
-		 end = finished ? "Your time:\n    " + shortTime : "Try again!";
-		 if (time < Assets.getBestTime()){
-			 end = "New high score!\n" + shortTime;
-			 Assets.setBestTime((float) Math.round(time * 10f) / 10f);
-		 }
-		 init();
-		 buttonN = -1;
+	Float shortTime;
+	public void gameOver(boolean finished){
+		shortTime = (float) Math.round(time * 10f) / 10f;
+		end = finished ? "Your time:\n    " + shortTime : "Try again!";
+		if (time < Assets.getBestTime()){
+			end = "New high score!\n" + shortTime;
+			Assets.setBestTime((float) Math.round(time * 10f) / 10f);
+		}
+		init();
+		buttonN = -1;
 	}
 
 
@@ -224,7 +224,7 @@ Float shortTime;
 			checkBox2();
 			for (CheckBox c : cb2) c.render(batch);
 		}
-				batch.end();
+		batch.end();
 
 	}
 	public static int getY() {return Gdx.graphics.getHeight() - Gdx.input.getY();}
@@ -254,7 +254,7 @@ Float shortTime;
 				gameOver(false);                                   //preveri če je checkbox ušel iz ekrana, če je se igra konča
 		}
 	}
- 	Rectangle r1 = new Rectangle();
+	Rectangle r1 = new Rectangle();
 	Rectangle r2 = new Rectangle();
 	int[][] cBIndex = new int[5][2];
 	int cBIndexN = 0;
@@ -294,7 +294,7 @@ Float shortTime;
 		}
 		for (int i=0; i < collisionDetectDelay.length; i++){
 			if (collisionDetectDelay[i]<0.2f)
-			collisionDetectDelay[i] += deltaTime;
+				collisionDetectDelay[i] += deltaTime;
 		}
 	}
 

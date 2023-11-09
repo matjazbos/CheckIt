@@ -4,20 +4,20 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.mbostic.game.Assets;
-import com.mbostic.game.JakaIgrcaMain;
+import com.mbostic.game.CheckItMain;
 
 public class Button {
     public Vector2 position;
     private TextureRegion regb;
     public Button (float x, float y){
         position = new Vector2(x, y);
-        JakaIgrcaMain.buttonN++;
+        CheckItMain.buttonN++;
         regb = Assets.instance.button.b;
     }
     public boolean tap(float x, float y) {
         if (x > position.x && x < position.x + 100
                 && y > position.y && y < position.y + 100){
-            JakaIgrcaMain.button = new Button(JakaIgrcaMain.randx(),JakaIgrcaMain.randy());
+            CheckItMain.button = new Button(CheckItMain.randx(), CheckItMain.randy());
             return true;
         }
         else return  false;

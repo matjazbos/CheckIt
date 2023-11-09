@@ -3,14 +3,14 @@ package com.mbostic.gameObjects;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.mbostic.game.Assets;
-import com.mbostic.game.JakaIgrcaMain;
+import com.mbostic.game.CheckItMain;
 
 public class CheckBox extends AbstractObject {
     public Vector2 speed;
     public int index;
     public CheckBox (float x, float y){
-        JakaIgrcaMain.cBN++;
-        index = JakaIgrcaMain.cBN;
+        CheckItMain.cBN++;
+        index = CheckItMain.cBN;
         speed = new Vector2();
         position = new Vector2(x, y);
         reguc = Assets.instance.checkBox.cbuc;

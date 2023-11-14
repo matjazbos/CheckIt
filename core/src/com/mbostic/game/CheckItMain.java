@@ -5,15 +5,20 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mbostic.gameObjects.AbstractObject;
 import com.mbostic.gameObjects.Button;
 import com.mbostic.gameObjects.CheckBox;
 import com.mbostic.gameObjects.Icon;
 import com.mbostic.gameObjects.RadioButton;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class CheckItMain extends InputAdapter implements ApplicationListener {
 	private static final String TAG = CheckItMain.class.getName();
@@ -45,18 +50,37 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	Icon exit;
 	Icon home;
 	Icon smallReplay;
-
+	static final int VIEWPORT_WIDTH = 720;
+	static final int VIEWPORT_HEIGHT = 1500;
+	//	private OrthographicCamera cam;
+	private Viewport viewport;
+	private Camera camera;
 	@Override
 	public void create () {
-		midX = Gdx.graphics.getWidth()/2;
-		midY = Gdx.graphics.getHeight()/2;
+//		midX = Gdx.graphics.getWidth()/2;
+//		midY = Gdx.graphics.getHeight()/2;
+		midX = VIEWPORT_WIDTH/2;
+		midY = VIEWPORT_HEIGHT/2;
+//		Gdx.app.log("MyTag", "my informative message w: " + Gdx.graphics.getWidth() + " h: " + Gdx.graphics.getHeight());
+//
+//		float w = Gdx.graphics.getWidth();
+//		float h = Gdx.graphics.getHeight();
+//
+//		float scale = (float)PREFERRED_HEIGHT / h;
+//
+//		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+//		camera.setToOrtho(true, PREFERRED_WIDTH, PREFERRED_HEIGHT);
+
+		camera = new PerspectiveCamera();
+		viewport = new FitViewport(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, camera);
+		// Set the initial position of the camera
+		camera.position.set((float) VIEWPORT_WIDTH / 2, (float) VIEWPORT_HEIGHT / 2, 0);
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		Gdx.input.setInputProcessor(this);
 		batch = new SpriteBatch();
 		Assets.instance.init(new AssetManager());
 		init();
 		buttons();
-
 	}
 
 	public void buttons(){
@@ -106,6 +130,8 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 
 	@Override
 	public void render () {
+//		viewport.apply();
+
 		deltaTime = Gdx.graphics.getDeltaTime();
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -122,12 +148,12 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 				settings.render(batch);
 				exit.render(batch);
 				if (Gdx.input.justTouched()) {
-					if (play.tap(Gdx.input.getX(), getY())) {
+					if (play.tap(getX(), getY())) {
 						button = new Button(randx(), randy());
-					} else if (exit.tap(Gdx.input.getX(), getY())) {
+					} else if (exit.tap(getX(), getY())) {
 						Gdx.app.exit();
 					}
-					else if (settings.tap(Gdx.input.getX(), getY())) {
+					else if (settings.tap(getX(), getY())) {
 
 						buttonN = -2;
 					}
@@ -139,7 +165,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 				Assets.instance.roboto.draw(batch, Float.toString((float) Math.round(time * 10f) / 10f), midX - 50, 2 * midY - 30);
 				smallReplay.render(batch);// replay
 				if (Gdx.input.justTouched())
-					if (smallReplay.tap(Gdx.input.getX(), getY())) {
+					if (smallReplay.tap(getX(), getY())) {
 						init();
 						buttonN = 1;
 						button = new Button(randx(), randy());
@@ -148,7 +174,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 //gumb
 			if (buttonN != -1 && buttonN != 1 && buttonN != -2 && buttonN != gamePositions[0] &&
 					buttonN != gamePositions[1] && buttonN != gamePositions[2] && buttonN != gamePositions[3]) {
-				if (Gdx.input.justTouched()) button.tap(Gdx.input.getX(), getY());
+				if (Gdx.input.justTouched()) button.tap(getX(), getY());
 				button.render(batch);
 			}
 //checkboxi
@@ -185,14 +211,14 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 				else {
 
 					if (Gdx.input.justTouched()) {
-						if (home.tap(Gdx.input.getX(), getY())) {
+						if (home.tap(getX(), getY())) {
 							buttonN = 1;
 							delay = 0;
-						} else if (replay.tap(Gdx.input.getX(), getY())) {
+						} else if (replay.tap(getX(), getY())) {
 							buttonN = 1;
 							delay = 0;
 							button = new Button(randx(), randy());
-						} else if (exit.tap(Gdx.input.getX(), getY())) {
+						} else if (exit.tap(getX(), getY())) {
 							Gdx.app.exit();
 						}
 					}
@@ -207,11 +233,11 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 				else {
 					if (Gdx.input.justTouched()) {
 						{
-							if (home.tap(Gdx.input.getX(), getY())) {
+							if (home.tap(getX(), getY())) {
 								buttonN = 1;
 								delay = 0;
 							}
-							else if (resetBestTime.tap(Gdx.input.getX(), getY())) {
+							else if (resetBestTime.tap(getX(), getY())) {
 								Assets.setBestTime(300);
 								buttonN = -2;
 							}
@@ -227,9 +253,10 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 		batch.end();
 
 	}
-	public static int getY() {return Gdx.graphics.getHeight() - Gdx.input.getY();}
-	public static int randx() {return MathUtils.random(10, Gdx.graphics.getWidth() - 100);}
-	public static int randy() {return MathUtils.random(10, Gdx.graphics.getHeight() - 200);}
+	public static int getY() {return VIEWPORT_HEIGHT / (Gdx.graphics.getHeight() - Gdx.input.getY());}
+	public static int getX() {return VIEWPORT_WIDTH / Gdx.input.getX();}
+	public static int randx() {return MathUtils.random(10, VIEWPORT_WIDTH - 100);}
+	public static int randy() {return MathUtils.random(10, VIEWPORT_HEIGHT - 200);}
 
 	int r;
 
@@ -301,7 +328,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	public void checkBoxCheck(AbstractObject[] objects){
 		if (Gdx.input.justTouched()) {
 			for (AbstractObject chb : objects) {
-				chb.tap(Gdx.input.getX(), getY());
+				chb.tap(getX(), getY());
 			}
 		}
 		allChecked = true;
@@ -316,7 +343,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	public void radioButtonCheck() {
 		if (Gdx.input.justTouched()) {
 			for (RadioButton rb : rB) {
-				if (rb.tap(Gdx.input.getX(), getY())) {
+				if (rb.tap(getX(), getY())) {
 					for (int i = 0; i < rB.length; i++) {
 						if (i == rb.id) continue;
 						rB[i].checked = false;
@@ -357,6 +384,8 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	}
 	@Override
 	public void resize(int width, int height) {
+		viewport.update(width, height, true);
+//		camera.update();
 	}
 
 	@Override

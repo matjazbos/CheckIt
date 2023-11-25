@@ -3,7 +3,9 @@ package com.mbostic.game;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -15,13 +17,17 @@ import com.mbostic.gameObjects.Icon;
 import com.mbostic.gameObjects.RadioButton;
 import com.badlogic.gdx.math.Rectangle;
 
-public class CheckItMain extends InputAdapter implements ApplicationListener {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class CheckItMain extends InputAdapter implements ApplicationListener, InputProcessor {
 	private static final String TAG = CheckItMain.class.getName();
 	SpriteBatch batch;
 	public static int rBN;
 	public static int cBN;
-	public static int buttonN; //št gumba
-	public static Button button;
+	public int buttonN; //št gumba
+	public Button button;
 	float time;
 	String end; //tekst na koncu igre
 	int midX;//sredina ekrana
@@ -32,7 +38,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	CheckBox[] cb2 = new CheckBox[10];
 	CheckBox[] cB = new CheckBox[10];
 	RadioButton[] rB = new RadioButton[10];
-	Button resetBestTime;
+	Button resetBestTime, openPrivacyPolicy;
 	boolean test = false;
 
 	float delay;
@@ -46,19 +52,36 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	Icon home;
 	Icon smallReplay;
 
+	private final OpenUrl openUrl;
+
+	public CheckItMain(OpenUrl openUrl) {
+		this.openUrl = openUrl;
+	}
+
 	@Override
 	public void create () {
 		midX = Gdx.graphics.getWidth()/2;
 		midY = Gdx.graphics.getHeight()/2;
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		Gdx.input.setInputProcessor(this);
+		Gdx.input.setCatchBackKey(true);
 		batch = new SpriteBatch();
 		Assets.instance.init(new AssetManager());
-		init();
 		buttons();
 
 	}
-
+	@Override
+	public boolean keyDown(int keycode) {
+		if(keycode == Input.Keys.BACK){
+			// Do your optional back button handling (show pause menu?)
+			if(buttonN == 0){
+				Gdx.app.exit();
+			} else {
+				buttonN = 0;
+			}
+		}
+		return false;
+	}
 	public void buttons(){
 		smallReplay = new Icon(2*midX-64-30, 2*midY-64-20, 64, "replay");
 		replay = new Icon(midX-128, 500, 256, "replay");
@@ -66,16 +89,21 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 		settings = new Icon(4*midX/3-90, 200, 180, "settings");
 		exit = new Icon(2*midX/3-90, 200, 180, "exit");
 		home = new Icon(4*midX/3-90, 200, 180, "home");
+		resetBestTime = new Button(midX + 220, midY + 200);
+		openPrivacyPolicy = new Button(midX + 220, midY);
+		button = new Button(randx(), randy());
+
 	}
 
 	public void init (){
 		delay =0;
 		rBN = -1;
 		cBN = 0;
-		buttonN = 0;
+		buttonN = 1;
+		button.position.x = randx();
+		button.position.y = randy();
 		time = 0;
 		setGamePositions();
-		resetBestTime = new Button(midX + 150, midY );
 
 		radioB = new RadioButton(-1,-1);
 		if(Assets.getBestTime()==0f)Assets.setBestTime(300f);
@@ -95,11 +123,10 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 	public void gameOver(boolean finished){
 		shortTime = (float) Math.round(time * 10f) / 10f;
 		end = finished ? "Your time:\n    " + shortTime : "Try again!";
-		if (time < Assets.getBestTime()){
+		if (finished && time < Assets.getBestTime()){
 			end = "New high score!\n" + shortTime;
 			Assets.setBestTime((float) Math.round(time * 10f) / 10f);
 		}
-		init();
 		buttonN = -1;
 	}
 
@@ -111,136 +138,144 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		batch.begin();
-		if (!test) {
+//		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+//			if(buttonN == 0){
+//				Gdx.app.exit();
+//			} else {
+//				buttonN = 0;
+//			}
+//		}
+//		if (!test) {
 //welcome screen
-			if (buttonN == 1) {
-				Assets.instance.robotoBig.draw(batch, "Check it!", 120, 2 * midY - 100);
+		if (buttonN == 0) {
+			Assets.instance.robotoBig.draw(batch, "Check it!", 120, 2 * midY - 100);
 
-				if(!(Assets.getBestTime()==300))
-					Assets.instance.roboto.draw(batch,"Best time: " + Assets.getBestTime(), 130,  2 * midY - 300);
-				play.render(batch);
-				settings.render(batch);
-				exit.render(batch);
+			if(!(Assets.getBestTime()==300))
+				Assets.instance.roboto.draw(batch,"Best time: " + Assets.getBestTime(), 130,  2 * midY - 300);
+			play.render(batch);
+			settings.render(batch);
+			exit.render(batch);
+			if (Gdx.input.justTouched()) {
+				if (play.tap(Gdx.input.getX(), getY())) {
+					init();
+				} else if (exit.tap(Gdx.input.getX(), getY())) {
+					Gdx.app.exit();
+				} else if (settings.tap(Gdx.input.getX(), getY())) {
+					buttonN = -2;
+				}
+			}
+		}
+		if (buttonN > 0) {
+//napiše čas
+			time += deltaTime;
+			Assets.instance.roboto.draw(batch, Float.toString((float) Math.round(time * 10f) / 10f), midX - 50, 2 * midY - 30);
+			smallReplay.render(batch);// replay
+			if (Gdx.input.justTouched())
+				if (smallReplay.tap(Gdx.input.getX(), getY())) {
+					init();
+				}
+//checkboxi
+			if (buttonN == gamePositions[0]) {
+				checkBoxCheck(cB);
+				for (CheckBox chb : cB) chb.render(batch);
+			} else if (buttonN == gamePositions[1]) {
+//premikajoči checkboxi 1
+				checkBox1();
+				for (CheckBox c : cb1) c.render(batch);
+
+			} else if (buttonN == gamePositions[2]) {
+//premikajoči checkboxi 2
+				checkBox2();
+				for (CheckBox c : cb2) c.render(batch);
+			} else if (buttonN == gamePositions[3]) {
+//radio button
+				radioButtonCheck();
+				for (RadioButton rdb : rB) rdb.render(batch);
+			} else if(buttonN <= 30){
+//gumb
+				if (Gdx.input.justTouched()){
+					if(button.tap(Gdx.input.getX(), getY())){
+						nextButton();
+					}
+				}
+				button.render(batch);
+			} else {
+//konec
+				gameOver(true);
+			}
+		}
+
+		if (buttonN == -1) {
+			replay.render(batch);
+			home.render(batch);
+			exit.render(batch);
+			Assets.instance.roboto.draw(batch, end, 200, 2 * midY - 100);
+			if (delay < 0.5f) delay += deltaTime;
+			else {
 				if (Gdx.input.justTouched()) {
-					if (play.tap(Gdx.input.getX(), getY())) {
-						button = new Button(randx(), randy());
+					if (home.tap(Gdx.input.getX(), getY())) {
+						buttonN = 0;
+						delay = 0;
+					} else if (replay.tap(Gdx.input.getX(), getY())) {
+						init();
 					} else if (exit.tap(Gdx.input.getX(), getY())) {
 						Gdx.app.exit();
 					}
-					else if (settings.tap(Gdx.input.getX(), getY())) {
+				}
+			}
+		} else if (buttonN == -2) {
+//nastavitve
+			home.render(batch);
+			resetBestTime.render(batch);
+			Assets.instance.roboto.draw(batch, "Reset best time", 200, midY+265);
+			openPrivacyPolicy.render(batch);
+			Assets.instance.roboto.draw(batch, "Privacy policy", 200, midY+65);
+			if (delay < 0.5f) delay += deltaTime;
+			else {
+				if (Gdx.input.justTouched()) {
+					if (home.tap(Gdx.input.getX(), getY())) {
+						buttonN = 0;
+						delay = 0;
+					}
+					else if (resetBestTime.tap(Gdx.input.getX(), getY())) {
+						Assets.setBestTime(300);
+						buttonN = -2;
+					}
+					else if (openPrivacyPolicy.tap(Gdx.input.getX(), getY())) {
+						openUrl.openUrl("https://raw.githubusercontent.com/MatjazBostic/CheckIt/master/privacy_policy.txt");
 
 						buttonN = -2;
 					}
 				}
 			}
-//napiše čas
-			if (buttonN != 1 && buttonN != -1 && buttonN != -2) {
-				time += deltaTime;
-				Assets.instance.roboto.draw(batch, Float.toString((float) Math.round(time * 10f) / 10f), midX - 50, 2 * midY - 30);
-				smallReplay.render(batch);// replay
-				if (Gdx.input.justTouched())
-					if (smallReplay.tap(Gdx.input.getX(), getY())) {
-						init();
-						buttonN = 1;
-						button = new Button(randx(), randy());
-					}
-			}
-//gumb
-			if (buttonN != -1 && buttonN != 1 && buttonN != -2 && buttonN != gamePositions[0] &&
-					buttonN != gamePositions[1] && buttonN != gamePositions[2] && buttonN != gamePositions[3]) {
-				if (Gdx.input.justTouched()) button.tap(Gdx.input.getX(), getY());
-				button.render(batch);
-			}
-//checkboxi
-			if (buttonN == gamePositions[0]) {
-				checkBoxCheck(cB);
-				for (CheckBox chb : cB) chb.render(batch);
-			}
-//premikajoči checkboxi 1
-			if (buttonN == gamePositions[1]) {
-				checkBox1();
-				for (CheckBox c : cb1) c.render(batch);
-
-			}
-//premikajoči checkboxi 2
-			if (buttonN == gamePositions[2]) {
-				checkBox2();
-				for (CheckBox c : cb2) c.render(batch);
-			}
-//radio button
-			if (buttonN == gamePositions[3]) {
-				radioButtonCheck();
-				for (RadioButton rdb : rB) rdb.render(batch);
-			}
-//konec
-			if (buttonN >= 30) {
-				gameOver(true);
-			}
-			if (buttonN == -1) {
-				replay.render(batch);
-				home.render(batch);
-				exit.render(batch);
-				Assets.instance.roboto.draw(batch, end, 200, 2 * midY - 100);
-				if (delay < 0.5f) delay += deltaTime;
-				else {
-
-					if (Gdx.input.justTouched()) {
-						if (home.tap(Gdx.input.getX(), getY())) {
-							buttonN = 1;
-							delay = 0;
-						} else if (replay.tap(Gdx.input.getX(), getY())) {
-							buttonN = 1;
-							delay = 0;
-							button = new Button(randx(), randy());
-						} else if (exit.tap(Gdx.input.getX(), getY())) {
-							Gdx.app.exit();
-						}
-					}
-				}
-			}
-//nastavitve
-			if (buttonN == -2) {
-				home.render(batch);
-				resetBestTime.render(batch);
-				Assets.instance.roboto.draw(batch, "reset best time", 10, midY+50);
-				if (delay < 0.5f) delay += deltaTime;
-				else {
-					if (Gdx.input.justTouched()) {
-						{
-							if (home.tap(Gdx.input.getX(), getY())) {
-								buttonN = 1;
-								delay = 0;
-							}
-							else if (resetBestTime.tap(Gdx.input.getX(), getY())) {
-								Assets.setBestTime(300);
-								buttonN = -2;
-							}
-						}
-					}
-				}
-			}
 		}
-		else {
-			checkBox2();
-			for (CheckBox c : cb2) c.render(batch);
-		}
+//		}
+//		else {
+//			checkBox2();
+//			for (CheckBox c : cb2) c.render(batch);
+//		}
 		batch.end();
-
 	}
 	public static int getY() {return Gdx.graphics.getHeight() - Gdx.input.getY();}
-	public static int randx() {return MathUtils.random(10, Gdx.graphics.getWidth() - 100);}
-	public static int randy() {return MathUtils.random(10, Gdx.graphics.getHeight() - 200);}
-
-	int r;
+	public static int randx() {return MathUtils.random(50, Gdx.graphics.getWidth() - 100);}
+	public static int randy() {return MathUtils.random(50, Gdx.graphics.getHeight() - 200);}
 
 	public void setGamePositions() {
-		for(int j=0; j<4; j++){
-			r = MathUtils.random(2,29);
+		List<Integer> intList = new ArrayList<>();
+		for(int i=1; i<=30; i++) {
+			intList.add(i);
+		}
 
-			for (int i=0;i<4;i++){
-				if(gamePositions[i] == r){r=MathUtils.random(2, 29); i=0;} //preveri če je pozicije že uporabljena
-			}
-			gamePositions[j]=r;
+		Collections.shuffle(intList);
+
+		for(int j=0; j<4; j++){
+			gamePositions[j] = intList.get(j);
+//			r = MathUtils.random(2,29);
+//
+//			for (int i=0;i<4;i++){
+//				if(gamePositions[i] == r){r=MathUtils.random(2, 29); i=0;} //preveri če je pozicije že uporabljena
+//			}
+//			gamePositions[j]=r;
 		}
 	}
 
@@ -310,7 +345,13 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 				allChecked = false;
 				break;}
 		}
-		if (allChecked) {button = new Button(randx(), randy());}
+		if (allChecked) {nextButton();}
+	}
+
+	public void nextButton(){
+		buttonN++;
+		button.position.x = randx();
+		button.position.y = randy();
 	}
 
 	public void radioButtonCheck() {
@@ -321,7 +362,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener {
 						if (i == rb.id) continue;
 						rB[i].checked = false;
 					}
-					if (rb.id == 5) button = new Button(randx(), randy());
+					if (rb.id == 5) nextButton();
 				}
 			}
 		}

@@ -14,8 +14,8 @@ public class AbstractObject {
     }
 
     public boolean tap(float x, float y) {
-        if (x > position.x - 8 && x < position.x + 48
-                && y > position.y - 8 && y < position.y + 48){
+        if (x > position.x - 15 && x < position.x + 55
+                && y > position.y - 15 && y < position.y + 55){
             this.checked = !this.checked; return true;}
         else return false;
     }

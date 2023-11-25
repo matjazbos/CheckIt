@@ -11,13 +11,13 @@ public class Button {
     private TextureRegion regb;
     public Button (float x, float y){
         position = new Vector2(x, y);
-        CheckItMain.buttonN++;
+//        CheckItMain.buttonN++;
         regb = Assets.instance.button.b;
     }
     public boolean tap(float x, float y) {
-        if (x > position.x && x < position.x + 100
-                && y > position.y && y < position.y + 100){
-            CheckItMain.button = new Button(CheckItMain.randx(), CheckItMain.randy());
+        if (x > position.x && x < position.x + 80
+                && y > position.y && y < position.y + 80){
+//            CheckItMain.button = new Button(CheckItMain.randx(), CheckItMain.randy());
             return true;
         }
         else return  false;

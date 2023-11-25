@@ -125,3 +125,7 @@ buildscript {
         google()
     }
 }
+
+dependencies {
+    implementation project(path: ':core')
+}

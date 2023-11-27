@@ -57,7 +57,7 @@ public class Assets implements Disposable {
         icons = new AssetIcons(atlas);
         prefs = Gdx.app.getPreferences("prefs");
         if (!prefs.contains("bestTime")) {
-            prefs.putFloat("bestTime", 300);
+            prefs.putFloat("bestTime", -1.f);
         }
     }
     public class AssetCheckBox {

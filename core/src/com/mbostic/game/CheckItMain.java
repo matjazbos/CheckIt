@@ -8,8 +8,12 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.mbostic.gameObjects.AbstractObject;
 import com.mbostic.gameObjects.Button;
 import com.mbostic.gameObjects.CheckBox;
@@ -39,8 +43,8 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 	CheckBox[] cB = new CheckBox[10];
 	RadioButton[] rB = new RadioButton[10];
 	Button resetBestTime, openPrivacyPolicy;
-	boolean test = false;
-
+	final static int EDGE_OFFSET = 50;
+	final static int EDGE_OFFSET_TOP = 100;
 	float delay;
 	float deltaTime;
 	boolean allChecked;
@@ -51,12 +55,30 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 	Icon exit;
 	Icon home;
 	Icon smallReplay;
-
 	private final OpenUrl openUrl;
 
 	public CheckItMain(OpenUrl openUrl) {
 		this.openUrl = openUrl;
 	}
+
+	public static class Picture extends Actor {
+		private final Texture texture;
+		private final int x, y, w, h;
+
+		public Picture(String internalPath, int x, int y, int w, int h) {
+			this.texture = new Texture(internalPath);
+			this.x = x;
+			this.y = y;
+			this.w = w;
+			this.h = h;
+		}
+		@Override
+		public void draw(Batch batch, float parentAlpha){
+			batch.draw(texture, x, y, w, h);
+		}
+
+	}
+	Picture titlePic;
 
 	@Override
 	public void create () {
@@ -68,7 +90,10 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 		batch = new SpriteBatch();
 		Assets.instance.init(new AssetManager());
 		buttons();
+		titlePic = new Picture("images/title.png", 50, Gdx.graphics.getHeight() - 400, Gdx.graphics.getWidth() - 100, 250);
 
+//		titlePic.setBounds(midX, Gdx.graphics.getHeight()-300, Gdx.graphics.getWidth(), 600);
+//		titlePic.setPosition(midX, Gdx.graphics.getHeight()-300, Align.center);
 	}
 	@Override
 	public boolean keyDown(int keycode) {
@@ -106,7 +131,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 		setGamePositions();
 
 		radioB = new RadioButton(-1,-1);
-		if(Assets.getBestTime()==0f)Assets.setBestTime(300f);
+//		if(Assets.getBestTime()==0f)Assets.setBestTime(300f);
 		for (int j = 0; j < cb1.length; j++) cb1[j] =
 				new CheckBox(midX - 20 + MathUtils.random(-100, 100), midY + MathUtils.random(-100, 100));//checkboxi nastanejo na sredini
 
@@ -123,7 +148,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 	public void gameOver(boolean finished){
 		shortTime = (float) Math.round(time * 10f) / 10f;
 		end = finished ? "Your time:\n    " + shortTime : "Try again!";
-		if (finished && time < Assets.getBestTime()){
+		if (finished && (Assets.getBestTime() == -1.f || time < Assets.getBestTime())){
 			end = "New high score!\n" + shortTime;
 			Assets.setBestTime((float) Math.round(time * 10f) / 10f);
 		}
@@ -148,10 +173,11 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 //		if (!test) {
 //welcome screen
 		if (buttonN == 0) {
-			Assets.instance.robotoBig.draw(batch, "Check it!", 120, 2 * midY - 100);
+			titlePic.draw(batch, 1f);
+			if(Assets.getBestTime() > 0)
+				Assets.instance.roboto.draw(batch,"Best time: " + Assets.getBestTime(), 320,  2 * midY - 550);
 
-			if(!(Assets.getBestTime()==300))
-				Assets.instance.roboto.draw(batch,"Best time: " + Assets.getBestTime(), 130,  2 * midY - 300);
+
 			play.render(batch);
 			settings.render(batch);
 			exit.render(batch);
@@ -238,7 +264,7 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 						delay = 0;
 					}
 					else if (resetBestTime.tap(Gdx.input.getX(), getY())) {
-						Assets.setBestTime(300);
+						Assets.setBestTime(-1.f);
 						buttonN = -2;
 					}
 					else if (openPrivacyPolicy.tap(Gdx.input.getX(), getY())) {
@@ -257,8 +283,9 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 		batch.end();
 	}
 	public static int getY() {return Gdx.graphics.getHeight() - Gdx.input.getY();}
-	public static int randx() {return MathUtils.random(50, Gdx.graphics.getWidth() - 100);}
-	public static int randy() {return MathUtils.random(50, Gdx.graphics.getHeight() - 200);}
+	public static int randx() {return MathUtils.random(EDGE_OFFSET, Gdx.graphics.getWidth() - 100);}
+	public static int randy() {return MathUtils.random(EDGE_OFFSET, Gdx.graphics.getHeight() - 200);}
+//	public static int randy() {return Gdx.graphics.getHeight() - 200;}
 
 	public void setGamePositions() {
 		List<Integer> intList = new ArrayList<>();
@@ -299,8 +326,8 @@ public class CheckItMain extends InputAdapter implements ApplicationListener, In
 		for (CheckBox c1 : cb2) {
 			c1.position.x += c1.speed.x * deltaTime * 4; //premakne vse checkboxe
 			c1.position.y += c1.speed.y * deltaTime * 4;
-			if (c1.position.x < 0 || c1.position.x > 2 * midX - 40) c1.speed.x = -c1.speed.x;
-			if (c1.position.y < 0 || c1.position.y > 2 * midY - 40) c1.speed.y = -c1.speed.y;//smer se obrne, če zadane rob ekrana
+			if (c1.position.x < 0 || c1.position.x > 2 * midX - AbstractObject.OBJ_WIDTH) c1.speed.x = -c1.speed.x;
+			if (c1.position.y < 0 || c1.position.y > 2 * midY - AbstractObject.OBJ_WIDTH - EDGE_OFFSET_TOP) c1.speed.y = -c1.speed.y;//smer se obrne, če zadane rob ekrana
 			r1.set(c1.position.x, c1.position.y, 40f, 40f);  //collision detect
 			for (CheckBox c2 : cb2) {
 				if (c1 == c2) continue;

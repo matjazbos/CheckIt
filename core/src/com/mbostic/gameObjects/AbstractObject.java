@@ -13,6 +13,9 @@ public class AbstractObject {
         checked = false;
     }
 
+    public static final int OBJ_WIDTH = 40;
+    public static final int OBJ_HEIGHT = 40;
+
     public boolean tap(float x, float y) {
         if (x > position.x - 15 && x < position.x + 55
                 && y > position.y - 15 && y < position.y + 55){
@@ -22,7 +25,7 @@ public class AbstractObject {
     public void render (SpriteBatch batch) {
         TextureRegion reg;
         reg = this.checked ? regc : reguc;
-        batch.draw(reg.getTexture(), position.x, position.y, 0, 0, 40f, 40f, 1, 1, 0,
+        batch.draw(reg.getTexture(), position.x, position.y, 0, 0, OBJ_WIDTH, OBJ_HEIGHT, 1, 1, 0,
                 reg.getRegionX(), reg.getRegionY(), reg.getRegionWidth(),
                 reg.getRegionHeight(), false, false);
     }
